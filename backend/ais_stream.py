@@ -1,7 +1,7 @@
 import json
 import asyncio
 import websockets
-from ship_filter import is_in_strait_of_hormuz
+from ship_filter import is_in_strait_of_hormuz, classify_ship
 from websocket_server import manager
 
 AIS_STREAM_URL = "wss://stream.aisstream.io/v0/stream"
@@ -13,7 +13,7 @@ async def ais_stream_client():
     # Longitude: 53 to 60
     subscribe_message = {
         "APIKey": API_KEY,
-        "BoundingBoxes": [[[23.0, 53.0], [29.0, 60.0]]], 
+        "BoundingBoxes": [[[20.0, 43.0], [32.0, 60.0]]], 
         "FilterMessageTypes": ["PositionReport", "ShipStaticData"]
     }
 
@@ -44,7 +44,8 @@ async def ais_stream_client():
                                         "lon": lon,
                                         "sog": pos_report.get("Sog", 0),
                                         "cog": pos_report.get("Cog", 0),
-                                        "timestamp": meta_data.get("time_utc", "")
+                                        "timestamp": meta_data.get("time_utc", ""),
+                                        "ship_type": classify_ship(pos_report.get("Sog", 0))
                                     }
                                     await manager.broadcast(ship_data)
                                     
@@ -56,3 +57,4 @@ async def ais_stream_client():
         except Exception as e:
             print(f"AISStream connection error: {e}. Reconnecting in 5 seconds...")
             await asyncio.sleep(5)
+

@@ -91,3 +91,17 @@ header h1 {
   color: #ff7b72;
   border: 1px solid rgba(218, 54, 51, 0.4);
 }
+
+.ship-popup-content h3{
+  margin:0 0 6px 0;
+  font-size:16px;
+}
+
+.ship-popup-content p{
+  margin:2px 0;
+  font-size:13px;
+}
+
+.ship-icon-wrapper{
+  pointer-events: auto;
+}

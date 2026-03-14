@@ -7,8 +7,8 @@ const MapView = ({ onConnectionChange }) => {
   const wsRef = useRef(null);
 
   useEffect(() => {
-    const wsUrl = "wss://ship-radar.onrender.com/live"; // update this to deployed render link
-    
+    const wsUrl = "wss://ship-radar.onrender.com/live";
+
     const connect = () => {
       wsRef.current = new WebSocket(wsUrl);
 
@@ -20,7 +20,7 @@ const MapView = ({ onConnectionChange }) => {
       wsRef.current.onmessage = (event) => {
         try {
           const shipData = JSON.parse(event.data);
-          
+
           setShips((prev) => ({
             ...prev,
             [shipData.mmsi]: shipData
@@ -44,8 +44,7 @@ const MapView = ({ onConnectionChange }) => {
 
     connect();
 
-    // Fetch initial ships via REST 
-    fetch("https://ship-radar.onrender.com/ships") // update this to deployed render link
+    fetch("https://ship-radar.onrender.com/ships")
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data)) {
@@ -67,25 +66,26 @@ const MapView = ({ onConnectionChange }) => {
 
   return (
     <MapContainer
-  center={[26, 56]}
-  zoom={6}
-  style={{ height: "100vh", width: "100%" }}
->
-  {/* Satellite imagery */}
-  <TileLayer
-    attribution="Tiles © Esri"
-    url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
-  />
+      center={[26, 56]}
+      zoom={6}
+      style={{ height: "100vh", width: "100%" }}
+    >
+      {/* Satellite imagery */}
+      <TileLayer
+        attribution="Tiles © Esri"
+        url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+      />
 
-  {/* English country & city labels */}
-  <TileLayer
-    attribution="Labels © Esri"
-    url="https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}"
-  />
+      {/* English labels */}
+      <TileLayer
+        attribution="Labels © Esri"
+        url="https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}"
+      />
 
-  {/* your ship layer */}
-</MapContainer>
+      {/* Render ships */}
+      {renderShips(ships)}
 
+    </MapContainer>
   );
 };
 

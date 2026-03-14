@@ -1,17 +1,18 @@
 def is_in_strait_of_hormuz(lat: float, lon: float) -> bool:
     """
-    Check if the given coordinates are within the Strait of Hormuz 
-    and Arabian Sea bounding box.
-    Latitude: 23 to 29
-    Longitude: 53 to 60
+    Extended maritime monitoring region.
+
+    Latitude: 10 to 35
+    Longitude: 40 to 80
+    Covers Persian Gulf, Strait of Hormuz,
+    Arabian Sea, and western India routes.
     """
     try:
         lat = float(lat)
         lon = float(lon)
-        return 23.0 <= lat <= 29.0 and 53.0 <= lon <= 60.0
+        return 10.0 <= lat <= 35.0 and 40.0 <= lon <= 80.0
     except (ValueError, TypeError):
         return False
-
 def classify_ship(sog: float) -> str:
     """
     Classify ship type based on Speed Over Ground (SOG).

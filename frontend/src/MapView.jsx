@@ -7,7 +7,7 @@ const MapView = ({ onConnectionChange }) => {
 	const wsRef = useRef(null);
 
 	useEffect(() => {
-		const wsUrl = "wss://maritime-dashboard-pnr9.onrender.com/live";
+		const wsUrl = "wss://ship-radar.onrender.com/live";
 
 		const connect = () => {
 			wsRef.current = new WebSocket(wsUrl);
@@ -45,7 +45,7 @@ const MapView = ({ onConnectionChange }) => {
 		connect();
 
 		// Fetch initial ships via REST
-		fetch("https://maritime-dashboard-pnr9.onrender.com/ships")
+		fetch("https://ship-radar.onrender.com/ships")
 			.then((res) => res.json())
 			.then((data) => {
 				if (Array.isArray(data)) {

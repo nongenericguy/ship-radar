@@ -5,15 +5,22 @@ from ship_filter import is_in_strait_of_hormuz, classify_ship
 from websocket_server import manager
 
 AIS_STREAM_URL = "wss://stream.aisstream.io/v0/stream"
-API_KEY = "e1278715114f2365b41a1e88c402107a8ec7050d"  # IMPORTANT: Users MUST replace this with their actual AISStream API key
+API_KEY = "e1278715114f2365b41a1e88c402107a8ec7050d"
+
+
+def normalize_sog(raw_sog):
+    """Convert AIS raw SOG (tenths of knots) to real knots."""
+    try:
+        return float(raw_sog) / 10.0
+    except (ValueError, TypeError):
+        return 0.0
+
 
 async def ais_stream_client():
-    # Bounding box for the Strait of Hormuz and Arabian Sea
-    # Latitude: 23 to 29
-    # Longitude: 53 to 60
+
     subscribe_message = {
         "APIKey": API_KEY,
-        "BoundingBoxes": [[[10.0, 53.0], [32.0, 60.0]]], 
+        "BoundingBoxes": [[[10.0, 53.0], [32.0, 60.0]]],
         "FilterMessageTypes": ["PositionReport", "ShipStaticData"]
     }
 
@@ -22,39 +29,45 @@ async def ais_stream_client():
             async with websockets.connect(AIS_STREAM_URL) as websocket:
                 await websocket.send(json.dumps(subscribe_message))
                 print("Connected to AISStream WebSocket")
-                
+
                 async for message_json in websocket:
                     try:
                         message = json.loads(message_json)
                         msg_type = message.get("MessageType")
-                        
+
                         if msg_type == "PositionReport":
+
                             pos_report = message.get("Message", {}).get("PositionReport", {})
                             meta_data = message.get("MetaData", {})
-                            
+
                             lat = pos_report.get("Latitude")
                             lon = pos_report.get("Longitude")
-                            
+
                             if lat is not None and lon is not None:
                                 if is_in_strait_of_hormuz(lat, lon):
+
+                                    raw_sog = pos_report.get("Sog", 0)
+                                    sog = normalize_sog(raw_sog)
+
                                     ship_data = {
                                         "mmsi": meta_data.get("MMSI", pos_report.get("UserID", "Unknown")),
                                         "name": meta_data.get("ShipName", "Unknown Vessel").strip(),
                                         "lat": lat,
                                         "lon": lon,
-                                        "sog": pos_report.get("Sog", 0),
+                                        "sog": sog,
                                         "cog": pos_report.get("Cog", 0),
                                         "timestamp": meta_data.get("time_utc", ""),
-                                        "ship_type": classify_ship(pos_report.get("Sog", 0))
+                                        "ship_type": classify_ship(sog)
                                     }
+
                                     await manager.broadcast(ship_data)
-                                    
+
                     except json.JSONDecodeError:
                         print("Error decoding AIS message json")
+
                     except Exception as e:
                         print(f"Error processing AIS message: {e}")
-                        
+
         except Exception as e:
             print(f"AISStream connection error: {e}. Reconnecting in 5 seconds...")
             await asyncio.sleep(5)
-

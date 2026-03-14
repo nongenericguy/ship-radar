@@ -13,7 +13,7 @@ async def ais_stream_client():
     # Longitude: 53 to 60
     subscribe_message = {
         "APIKey": API_KEY,
-        "BoundingBoxes": [[[20.0, 43.0], [32.0, 60.0]]], 
+        "BoundingBoxes": [[[10.0, 53.0], [32.0, 60.0]]], 
         "FilterMessageTypes": ["PositionReport", "ShipStaticData"]
     }
 
